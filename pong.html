@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Pong</title>
+  <style>
+    canvas {
+      width: 800px;
+      height: 500px;
+      border: solid red 4px;
+    }
+    div {
+      font-weight:bold;
+      font-size: 30px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="canvas">
+
+    </canvas>
+<div id="msg_div">
+</div>
+
+  <script>
+    var shotSound = new Audio("media/4359__noisecollector__pongblipf4.wav");
+    var winSound = new Audio("media/woohoo.wav");
+    var msgDiv = document.getElementById('msg_div');
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = 800;
+    canvas.height = 500;
+
+
+
+    var xBound = 800;
+    var yBound = 500;
+
+    var xLBound = 0;
+    var yLBound = 0;
+
+    var xDiff = 2;
+    var yDiff = 2;
+
+    var paddle1 = {
+      color: 'black',
+      x: 25,
+      y: 240,
+      width: 10,
+      height: 100,
+      score: 0,
+      top: this.y,
+      bottom: this.y + this.height,
+      right: this.x + this.width,
+      left: this.x
+    }
+
+    var paddle2 = {
+      color: 'blue',
+      x: 775,
+      y: 240,
+      width: 10,
+      height: 100,
+      score: 0,
+      top: this.y,
+      bottom: this.y + this.height,
+      right: this.x + this.width,
+      left: this.x
+    }
+
+    var ball = {
+      x: 400,
+      y: 240,
+      radius: 5,
+      top: this.y - this.radius,
+      bottom: this.y + this.radius,
+      right: this.x + this.radius,
+      left: this.x - this.radius
+    }
+
+
+
+    function intersect(paddle, ball) {
+
+      return !(ball.x + ball.radius < paddle.x ||
+        ball.y - ball.radius > paddle.y + paddle.height ||
+        ball.x - ball.radius > paddle.x + paddle.width ||
+        ball.y + ball.radius < paddle.y
+      );
+    }
+
+
+    function movePaddle(paddle, vertAdj) {
+      var y = paddle.y + vertAdj;
+      if (y > yLBound && y < yBound) {
+        paddle.y = y;
+      }
+      return;
+    }
+    // var paddle2={color: 'blue'; x:; y:, width:; height:}
+    function draw(dt) {
+
+      if (paddle1.score >= 5){
+        msgDiv.innerHTML=' Player 1 Wins! ';
+        winSound.play();
+        return;
+      }
+
+      if (paddle2.score >= 5){
+        msgDiv.innerHTML=' Player 2 Wins! ';
+        winSound.play();
+        return;
+      }
+
+      // clear screen
+      var randFlip = Math.floor(Math.random() * 5) + 1;
+      // console.log('ranFlip' + randFlip);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = paddle1.color;
+      ctx.fillRect(paddle1.x, paddle1.y, paddle1.width, paddle1.height);
+
+
+      ctx.fillStyle = paddle2.color;
+      ctx.fillRect(paddle2.x, paddle2.y, paddle2.width, paddle2.height);
+
+      ctx.fillStyle = '#020';
+      ctx.lineWidth = 10;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(400, 40);
+      ctx.lineTo(400, 500);
+
+      ctx.stroke();
+
+      ctx.font = "30px Arial";
+      ctx.fillText('Score', 350, 35);
+      ctx.fillText(paddle1.score, 325, 67);
+      ctx.fillText(paddle2.score, 450, 67);
+
+
+      //Scoring - check if ball hit either wall
+      if (ball.x >= xBound) {
+        paddle1.score += 1;
+      }
+
+      if (ball.x <= xLBound) {
+        paddle2.score += 1;
+      }
+      //Change Ball Direction - when ball reaches either wall or the paddles
+      if (
+        (ball.x >= xBound) ||
+        (ball.x <= xLBound)
+      ) {
+        xDiff = xDiff * -1;
+
+        // console.log('xDiff =' + xDiff);
+      }
+
+      if (
+        (ball.y >= yBound) ||
+        (ball.y <= yLBound)
+      ) {
+        yDiff = yDiff * -1;
+        // console.log('yDiff =' + yDiff);
+
+      }
+      if ((intersect(paddle1, ball)) ||
+        (intersect(paddle2, ball))) {
+         shotSound.play();
+        yDiff = yDiff * -1;
+        xDiff = xDiff * -1;
+      }
+
+      //draw ball
+      ctx.beginPath();
+      ctx.fillStyle = 'red';
+      ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      ball.x += xDiff;
+      ball.y += yDiff;
+
+      window.requestAnimationFrame(draw);
+    }
+
+    window.requestAnimationFrame(draw);
+
+    addEventListener('keypress', function(evt) {
+      if (evt.keyCode === 108) {
+        // player 2 down
+        movePaddle(paddle2, 10);
+      }
+
+      if (evt.keyCode === 112) {
+        // player 2 up
+        movePaddle(paddle2, -10);
+      }
+
+      if (evt.keyCode === 119) {
+        // player 1 up
+        movePaddle(paddle1, -10);
+      }
+
+      if (evt.keyCode === 115) {
+        // player 1 down
+        movePaddle(paddle1, 10);
+
+      }
+    });
+  </script>
+
+
+</body>
+
+</html>
